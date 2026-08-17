@@ -308,11 +308,11 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
   }
 
   return (
-    <div className="grid h-[calc(100vh-8.5rem)] min-h-[540px] overflow-hidden rounded-2xl border border-line bg-card lg:grid-cols-[320px_minmax(0,1fr)_280px]">
+    <div className="salon-card grid h-[calc(100dvh-8.2rem)] min-h-[540px] overflow-hidden rounded-[1.6rem] lg:h-[calc(100dvh-3.6rem)] lg:grid-cols-[300px_minmax(0,1fr)_280px]">
       <aside className="flex min-h-0 flex-col border-b border-line lg:border-b-0 lg:border-r">
         <div className="space-y-2 border-b border-line p-3">
           <input
-            className="w-full rounded-lg border border-line px-3 py-2 text-sm"
+            className="salon-input rounded-xl text-sm"
             placeholder={isAdmin ? "Buscar nome ou telefone" : "Buscar nome"}
             value={q}
             onChange={(e) => setQ(e.target.value)}
@@ -322,7 +322,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
               ? [
                   ["todas", "Todas"],
                   ["humano", "Humanas"],
-                  ["ia", "Agente"],
+                  ["ia", "Pati"],
                   ["minhas", "Minhas"],
                 ]
               : [["minhas", "Minhas"]]
@@ -331,7 +331,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
                 key={id}
                 type="button"
                 onClick={() => setFiltro(id)}
-                className={`rounded-full px-2 py-1 ${filtro === id ? "bg-accent text-white" : "bg-bg"}`}
+                className={`rounded-full px-2.5 py-1 ${filtro === id ? "bg-accent text-white" : "bg-bg-deep text-muted"}`}
               >
                 {label}
               </button>
@@ -347,7 +347,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
               <button
                 type="button"
                 onClick={() => setTel(item.telefone)}
-                className={`w-full border-b border-line/70 px-3 py-3 text-left ${tel === item.telefone ? "bg-accent-soft" : ""}`}
+                className={`w-full border-b border-line/70 px-3 py-3 text-left transition ${tel === item.telefone ? "bg-accent-soft" : "hover:bg-bg"}`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <strong className="text-sm">{labelConversa(item)}</strong>
@@ -355,7 +355,9 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
                 </div>
                 <div className="mt-1 flex items-center justify-between gap-2">
                   <p className="truncate text-xs text-muted">{item.preview}</p>
-                  <span className="shrink-0 text-[10px] uppercase text-muted">{item.modo}</span>
+                  <span className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] uppercase ${item.modo === "humano" ? "bg-gold-soft text-ink" : "text-muted"}`}>
+                    {item.modo === "humano" ? "humano" : "Pati"}
+                  </span>
                 </div>
               </button>
             </li>
@@ -366,7 +368,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
       <section className="flex min-h-0 flex-col">
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line p-3">
           <div>
-            <h1 className="text-lg font-semibold">{titulo}</h1>
+            <h1 className="font-display text-2xl leading-none">{titulo}</h1>
             {isAdmin ? <p className="text-xs text-muted">{tel || "—"}</p> : null}
             {detalhe?.atendimento?.operador ? (
               <p className="text-xs text-muted">Com: {detalhe.atendimento.operador}</p>
@@ -378,7 +380,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
                 <button
                   type="button"
                   onClick={() => void action("assumir")}
-                  className="rounded-lg bg-accent px-3 py-1.5 text-white"
+                  className="salon-btn salon-btn-primary rounded-full"
                 >
                   Assumir
                 </button>
@@ -386,16 +388,16 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
               <button
                 type="button"
                 onClick={() => void action("devolver")}
-                className="rounded-lg border border-line px-3 py-1.5"
+                className="salon-btn salon-btn-ghost rounded-full"
               >
-                Devolver ao agente
+                Devolver à Pati
               </button>
             </div>
           ) : null}
         </header>
         <div
           ref={chatRef}
-          className="min-h-0 flex-1 space-y-2 overflow-y-auto p-4"
+          className="min-h-0 flex-1 space-y-2 overflow-y-auto bg-[radial-gradient(circle_at_1px_1px,rgba(122,31,50,0.07)_1px,transparent_0)] bg-[length:18px_18px] p-4"
           onScroll={(e) => {
             const el = e.currentTarget;
             nearBottom.current = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
@@ -409,18 +411,18 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
           {detalhe?.mensagens.map((msg) => (
             <div
               key={msg.id}
-              className={`group relative max-w-[80%] rounded-2xl px-3 pb-5 pt-2 text-sm ${
+              className={`group relative max-w-[80%] rounded-[1.2rem] px-3 pb-5 pt-2 text-sm shadow-[0_8px_18px_-14px_rgba(42,23,20,0.45)] ${
                 msg.direcao === "inbound"
-                  ? "bg-bg"
+                  ? "rounded-tl-md bg-card ring-1 ring-line"
                   : msg.direcao === "outbound_ia"
-                    ? "ml-auto bg-accent-soft"
-                    : "ml-auto bg-accent text-white"
+                    ? "ml-auto rounded-tr-md bg-accent-soft"
+                    : "ml-auto rounded-tr-md bg-accent text-white"
               }`}
             >
               <p className="whitespace-pre-wrap">{msg.texto}</p>
               <div className="mt-1 flex items-center justify-between gap-2">
                 <p className={`text-[10px] ${msg.direcao === "outbound_humano" ? "text-white/80" : "text-muted"}`}>
-                  {msg.direcao === "inbound" ? "Cliente" : msg.direcao === "outbound_ia" ? "Agente" : "Humano"}
+                  {msg.direcao === "inbound" ? "Cliente" : msg.direcao === "outbound_ia" ? "Pati" : "Casa"}
                   {msg.reacao ? ` · ${msg.reacao}` : ""}
                 </p>
                 {msg.id_mensagem_wa ? (
@@ -454,8 +456,8 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
           {okMsg ? <p className="mb-2 text-sm text-muted">{okMsg}</p> : null}
           <div className="flex gap-2">
             <textarea
-              className="min-h-12 flex-1 rounded-lg border border-line px-3 py-2 text-sm"
-              placeholder={modo === "humano" ? "Escreva como corretor..." : "Assuma / atribua o atendimento para responder"}
+              className="salon-input min-h-12 flex-1 rounded-2xl text-sm"
+              placeholder={modo === "humano" ? "Escreva como a casa..." : "Assuma o atendimento para responder no lugar da Pati"}
               value={texto}
               disabled={!tel || modo !== "humano" || enviando}
               onChange={(e) => onTyping(e.target.value)}
@@ -470,7 +472,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
               type="button"
               onClick={() => void enviar()}
               disabled={!tel || modo !== "humano" || enviando || !texto.trim()}
-              className="rounded-lg bg-ink px-4 text-sm text-white disabled:opacity-40"
+              className="salon-btn salon-btn-primary rounded-full px-5 disabled:opacity-40"
             >
               {enviando ? "Enviando…" : "Enviar"}
             </button>
@@ -481,12 +483,12 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
       <aside className="min-h-0 overflow-y-auto border-t border-line p-3 lg:border-l lg:border-t-0">
         {isAdmin ? (
           <>
-            <h2 className="text-sm font-medium">Transferir</h2>
+            <h2 className="font-display text-xl">Passar para alguém</h2>
             <p className="mt-1 text-[11px] text-muted">
-              Só grava no painel (pausa a SofIA). Não precisa da Evolution ligada.
+              Pausa a Pati neste chat. O WhatsApp continua o mesmo.
             </p>
             <select
-              className="mt-2 w-full rounded-lg border border-line px-2 py-2 text-sm"
+              className="salon-input mt-2 rounded-xl text-sm"
               value={operadorId}
               onChange={(e) => {
                 setOperadorId(e.target.value);
@@ -502,11 +504,11 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
             </select>
             <button
               type="button"
-              className="mt-2 w-full rounded-lg bg-accent py-2 text-sm text-white disabled:opacity-40"
+              className="salon-btn salon-btn-primary mt-2 w-full rounded-full disabled:opacity-40"
               disabled={!tel || atribuindo}
               onClick={() => void atribuir()}
             >
-              {atribuindo ? "Atribuindo…" : "Atribuir e pausar agente"}
+              {atribuindo ? "Atribuindo…" : "Atribuir e pausar a Pati"}
             </button>
           </>
         ) : (
@@ -514,7 +516,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
             Você atende apenas conversas encaminhadas pelo administrador.
           </p>
         )}
-        <h2 className="mt-6 text-sm font-medium">Lead / CRM</h2>
+        <h2 className="font-display mt-6 text-xl">Ficha da cliente</h2>
         <div className="mt-2 space-y-2 text-sm">
           {[
             ["nome_cliente", "Nome"],
@@ -527,7 +529,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
             <label key={key} className="block">
               <span className="text-xs text-muted">{label}</span>
               <input
-                className="mt-1 w-full rounded-lg border border-line px-2 py-1.5"
+                className="salon-input mt-1 rounded-xl px-2 py-1.5"
                 value={crm[key as keyof typeof crm]}
                 disabled={!tel}
                 onChange={(e) => {
@@ -540,7 +542,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
           <div className="flex gap-2">
             <button
               type="button"
-              className="flex-1 rounded-lg bg-ink py-2 text-white disabled:opacity-40"
+              className="salon-btn salon-btn-primary flex-1 rounded-full disabled:opacity-40"
               disabled={!tel}
               onClick={() => void salvarCrm()}
             >
@@ -548,7 +550,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
             </button>
             <button
               type="button"
-              className="flex-1 rounded-lg border border-line py-2 disabled:opacity-40"
+              className="salon-btn salon-btn-ghost flex-1 rounded-full disabled:opacity-40"
               disabled={!tel}
               onClick={() => void varrerCrm()}
             >

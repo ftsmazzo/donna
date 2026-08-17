@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { iniciais } from "@/lib/salon";
 
 type UserRow = {
   id: number;
@@ -51,52 +52,59 @@ export default function UsuariosPage() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-      <section className="rounded-2xl border border-line bg-card p-4">
-        <h1 className="text-xl font-semibold">Contas do painel</h1>
-        {erro ? <p className="mt-2 text-sm text-accent">{erro}</p> : null}
-        <table className="mt-4 w-full text-left text-sm">
-          <thead className="text-muted">
-            <tr>
-              <th className="py-2 font-medium">Nome</th>
-              <th className="font-medium">E-mail</th>
-              <th className="font-medium">Papel</th>
-            </tr>
-          </thead>
-          <tbody>
+    <div className="space-y-6">
+      <div>
+        <p className="salon-kicker">Acesso</p>
+        <h1 className="font-display mt-1 text-4xl leading-none">Equipe da casa</h1>
+        <p className="mt-2 text-sm text-muted">Quem entra no painel para assumir o Zap no lugar da Pati.</p>
+      </div>
+      <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+        <section className="salon-card rounded-3xl p-5">
+          {erro ? <p className="mb-3 text-sm text-accent">{erro}</p> : null}
+          <ul className="space-y-3">
             {usuarios.map((u) => (
-              <tr key={u.id} className="border-t border-line">
-                <td className="py-2">{u.nome}</td>
-                <td>{u.email}</td>
-                <td>{u.papel}</td>
-              </tr>
+              <li key={u.id} className="flex items-center justify-between gap-3 rounded-2xl bg-bg/70 px-3 py-3">
+                <div className="flex items-center gap-3">
+                  <span className="grid h-10 w-10 place-items-center rounded-full bg-accent text-sm font-semibold text-white">
+                    {iniciais(u.nome)}
+                  </span>
+                  <span>
+                    <span className="block font-medium">{u.nome}</span>
+                    <span className="block text-xs text-muted">{u.email}</span>
+                  </span>
+                </div>
+                <span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold uppercase ${u.papel === "admin" ? "bg-accent text-white" : "bg-gold-soft text-ink"}`}>
+                  {u.papel === "admin" ? "admin" : "equipe"}
+                </span>
+              </li>
             ))}
-          </tbody>
-        </table>
-      </section>
-      <form onSubmit={onSubmit} className="rounded-2xl border border-line bg-card p-4">
-        <h2 className="font-medium">Novo usuário</h2>
-        <label className="mt-3 block text-sm">
-          Nome
-          <input className="mt-1 w-full rounded-lg border border-line px-3 py-2" value={nome} onChange={(e) => setNome(e.target.value)} required />
-        </label>
-        <label className="mt-3 block text-sm">
-          E-mail
-          <input className="mt-1 w-full rounded-lg border border-line px-3 py-2" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        </label>
-        <label className="mt-3 block text-sm">
-          Senha
-          <input className="mt-1 w-full rounded-lg border border-line px-3 py-2" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
-        </label>
-        <label className="mt-3 block text-sm">
-          Papel
-          <select className="mt-1 w-full rounded-lg border border-line px-3 py-2" value={papel} onChange={(e) => setPapel(e.target.value as "admin" | "corretor")}>
-            <option value="corretor">Corretor</option>
-            <option value="admin">Admin</option>
-          </select>
-        </label>
-        <button className="mt-4 w-full rounded-lg bg-accent py-2 text-sm text-white">Criar conta</button>
-      </form>
+          </ul>
+        </section>
+        <form onSubmit={onSubmit} className="salon-card rounded-3xl p-5">
+          <p className="salon-kicker">Novo</p>
+          <h2 className="font-display text-2xl">Chamar pra casa</h2>
+          <label className="mt-4 block text-sm">
+            Nome
+            <input className="salon-input mt-1 rounded-xl" value={nome} onChange={(e) => setNome(e.target.value)} required />
+          </label>
+          <label className="mt-3 block text-sm">
+            E-mail
+            <input className="salon-input mt-1 rounded-xl" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+          </label>
+          <label className="mt-3 block text-sm">
+            Senha
+            <input className="salon-input mt-1 rounded-xl" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} required />
+          </label>
+          <label className="mt-3 block text-sm">
+            Papel
+            <select className="salon-input mt-1 rounded-xl" value={papel} onChange={(e) => setPapel(e.target.value as "admin" | "corretor")}>
+              <option value="corretor">Equipe</option>
+              <option value="admin">Admin</option>
+            </select>
+          </label>
+          <button className="salon-btn salon-btn-primary mt-5 w-full rounded-full">Criar conta</button>
+        </form>
+      </div>
     </div>
   );
 }

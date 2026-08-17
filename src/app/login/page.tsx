@@ -9,9 +9,9 @@ export default function LoginPage() {
   const [senha, setSenha] = useState("");
   const [erro, setErro] = useState("");
   const [loading, setLoading] = useState(false);
-  const [brand, setBrand] = useState("Atendimento");
-  const [appName, setAppName] = useState("Painel Agente");
-  const [agentName, setAgentName] = useState("Agente");
+  const [brand, setBrand] = useState("Donna");
+  const [appName, setAppName] = useState("Donna");
+  const [agentName, setAgentName] = useState("Pati");
 
   useEffect(() => {
     fetch("/api/branding")
@@ -44,39 +44,47 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="min-h-screen grid place-items-center px-4">
-      <form onSubmit={onSubmit} className="w-full max-w-sm rounded-2xl border border-line bg-card p-8">
-        <p className="text-xs uppercase tracking-[0.2em] text-muted">{brand}</p>
-        <h1 className="mt-2 text-2xl font-semibold">{appName}</h1>
-        <p className="mt-2 text-sm text-muted">Entre para assumir conversas do {agentName}.</p>
-        <label className="mt-6 block text-sm">
-          E-mail
-          <input
-            className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 outline-none focus:border-accent"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            type="email"
-            required
-          />
-        </label>
-        <label className="mt-4 block text-sm">
-          Senha
-          <input
-            className="mt-1 w-full rounded-lg border border-line bg-white px-3 py-2 outline-none focus:border-accent"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-            type="password"
-            required
-          />
-        </label>
-        {erro ? <p className="mt-3 text-sm text-accent">{erro}</p> : null}
-        <button
-          className="mt-6 w-full rounded-lg bg-accent py-2.5 text-sm font-medium text-white disabled:opacity-60"
-          disabled={loading}
-        >
-          {loading ? "Entrando..." : "Entrar"}
-        </button>
-      </form>
+    <main className="relative min-h-screen overflow-hidden bg-accent">
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_18%_20%,rgba(196,165,116,0.35),transparent_34%),radial-gradient(circle_at_88%_80%,rgba(196,92,106,0.4),transparent_42%)]" />
+      <div className="relative mx-auto grid min-h-screen max-w-6xl items-center gap-10 px-4 py-12 lg:grid-cols-2">
+        <div className="hidden text-white lg:block">
+          <p className="salon-kicker text-gold">{brand} · Catanduva</p>
+          <h1 className="font-display mt-3 text-6xl leading-[0.9]">A casa da Pati</h1>
+          <p className="mt-5 max-w-md text-lg text-white/75">
+            Agenda, WhatsApp e a equipe no mesmo lugar. Entra, vê o dia e assume o chat quando a cliente pedir gente de verdade.
+          </p>
+          <p className="mt-8 text-sm text-gold/90">{agentName} atende o Zap · o painel mostra o que ela fechou</p>
+        </div>
+        <form onSubmit={onSubmit} className="salon-card w-full max-w-md justify-self-end rounded-[2rem] p-8 lg:p-10">
+          <p className="salon-kicker">{brand}</p>
+          <h1 className="font-display mt-2 text-4xl leading-none">{appName}</h1>
+          <p className="mt-3 text-sm text-muted">Entre para ver a agenda e as conversas da {agentName}.</p>
+          <label className="mt-8 block text-sm">
+            E-mail
+            <input
+              className="salon-input mt-1 rounded-xl"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              type="email"
+              required
+            />
+          </label>
+          <label className="mt-4 block text-sm">
+            Senha
+            <input
+              className="salon-input mt-1 rounded-xl"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+              type="password"
+              required
+            />
+          </label>
+          {erro ? <p className="mt-3 text-sm text-accent">{erro}</p> : null}
+          <button className="salon-btn salon-btn-primary mt-6 w-full rounded-full py-3" disabled={loading}>
+            {loading ? "Entrando..." : "Entrar na casa"}
+          </button>
+        </form>
+      </div>
     </main>
   );
 }
