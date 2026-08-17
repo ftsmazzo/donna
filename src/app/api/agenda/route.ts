@@ -27,7 +27,7 @@ export async function GET() {
       a.unidade_id,
       s.nome AS servico,
       s.codigo AS servico_codigo,
-      a.inicio::text,
+      to_char(a.inicio AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS') || 'Z' AS inicio,
       a.status,
       a.duracao_min,
       a.preco_centavos
@@ -58,7 +58,7 @@ export async function GET() {
       e.unidade_id,
       s.nome AS servico,
       s.codigo AS servico_codigo,
-      e.inicio::text,
+      to_char(e.inicio AT TIME ZONE 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS') || 'Z' AS inicio,
       e.status
     FROM espera_donna e
     JOIN unidades_donna u ON u.id = e.unidade_id

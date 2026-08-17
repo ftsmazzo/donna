@@ -36,15 +36,24 @@ export function reais(centavos: number) {
 }
 
 export function parseQuando(iso: string) {
-  const normalized = iso.includes("T") ? iso : iso.replace(" ", "T");
-  const d = new Date(normalized);
+  let s = iso.trim().replace(" ", "T");
+  s = s.replace(/([+-]\d{2})$/, "$1:00");
+  s = s.replace(/([+-]\d{2})(\d{2})$/, "$1:$2");
+  const d = new Date(s);
   return Number.isNaN(d.getTime()) ? null : d;
 }
+
+const horaOpts: Intl.DateTimeFormatOptions = {
+  timeZone: TZ,
+  hour: "2-digit",
+  minute: "2-digit",
+  hourCycle: "h23",
+};
 
 export function formatHora(iso: string) {
   const d = parseQuando(iso);
   if (!d) return iso;
-  return d.toLocaleTimeString("pt-BR", { timeZone: TZ, hour: "2-digit", minute: "2-digit" });
+  return d.toLocaleTimeString("pt-BR", horaOpts);
 }
 
 export function formatDiaCurto(iso: string) {
@@ -56,7 +65,19 @@ export function formatDiaCurto(iso: string) {
 export function formatQuando(iso: string) {
   const d = parseQuando(iso);
   if (!d) return iso;
-  return d.toLocaleString("pt-BR", { timeZone: TZ, dateStyle: "short", timeStyle: "short" });
+  return `${formatDiaLinha(iso)} · ${formatHora(iso)}`;
+}
+
+export function formatDiaLinha(iso: string) {
+  const d = parseQuando(iso);
+  if (!d) return iso;
+  const txt = d.toLocaleDateString("pt-BR", {
+    timeZone: TZ,
+    weekday: "short",
+    day: "2-digit",
+    month: "2-digit",
+  });
+  return txt.replace(/[.,]/g, "").replace(/\s+/g, " ").trim();
 }
 
 export function chaveDia(iso: string) {

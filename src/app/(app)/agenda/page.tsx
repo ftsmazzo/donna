@@ -5,6 +5,7 @@ import {
   chaveDia,
   corServico,
   ehHoje,
+  formatDiaLinha,
   formatHora,
   reais,
   tituloDia,
@@ -161,7 +162,12 @@ export default function AgendaPage() {
                       <div className="w-1.5 shrink-0" style={{ background: cor.bg }} />
                       <div className="flex flex-1 items-start justify-between gap-3 p-4">
                         <div>
-                          <p className="font-display text-4xl leading-none tabular-nums">{formatHora(row.inicio)}</p>
+                          <p className="text-[2.15rem] font-light leading-none tracking-tight tabular-nums">
+                            {formatHora(row.inicio)}
+                          </p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted">
+                            {formatDiaLinha(row.inicio)}
+                          </p>
                           <p className="mt-2 text-sm font-medium">{row.servico}</p>
                           <a className="mt-1 block text-sm text-accent hover:underline" href={`/atendimento?tel=${row.telefone}`}>
                             {row.nome || row.telefone}
@@ -207,7 +213,9 @@ export default function AgendaPage() {
               return (
                 <li key={row.id} className="rounded-2xl border border-dashed border-gold bg-gold-soft/50 p-3">
                   <div className="flex items-center justify-between gap-2">
-                    <strong className="text-sm">{formatHora(row.inicio)}</strong>
+                    <strong className="text-sm font-medium tabular-nums">
+                      {formatDiaLinha(row.inicio)} · {formatHora(row.inicio)}
+                    </strong>
                     <span className="rounded-full bg-white px-2 py-0.5 text-[10px] uppercase tracking-wide text-warn">
                       {row.status}
                     </span>

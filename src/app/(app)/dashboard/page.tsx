@@ -134,7 +134,7 @@ export default function DashboardPage() {
                 return (
                   <li key={row.id} className="flex items-center justify-between gap-3 rounded-2xl bg-bg/70 px-3 py-2">
                     <div className="flex items-center gap-3">
-                      <span className="font-display w-16 text-2xl leading-none tabular-nums">{formatHora(row.inicio)}</span>
+                      <span className="w-16 text-2xl font-light leading-none tracking-tight tabular-nums">{formatHora(row.inicio)}</span>
                       <span>
                         <span className="block text-sm font-medium">{row.servico}</span>
                         <a className="text-xs text-accent hover:underline" href={`/atendimento?tel=${row.telefone}`}>
