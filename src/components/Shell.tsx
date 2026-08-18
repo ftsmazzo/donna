@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { PwaControls } from "@/components/PwaControls";
 import { iniciais } from "@/lib/salon";
 
 const links = [
@@ -14,8 +15,8 @@ const links = [
 function DonnaMark() {
   return (
     <div className="flex items-center gap-3">
-      <span className="grid h-11 w-11 place-items-center rounded-full bg-gold-soft text-[1.45rem] leading-none text-accent ring-1 ring-gold/50">
-        <span className="font-display mt-[1px]">D</span>
+      <span className="grid h-11 w-11 place-items-center overflow-hidden rounded-full bg-gold-soft text-[1.45rem] leading-none text-accent ring-1 ring-gold/50">
+        <img src="/icon-192.png" alt="" className="h-full w-full object-cover" />
       </span>
       <span>
         <span className="block text-[10px] font-semibold uppercase tracking-[0.22em] text-gold">Catanduva</span>
@@ -72,57 +73,66 @@ export function Shell({
             );
           })}
         </nav>
-        <div className="rounded-2xl bg-black/15 p-3 ring-1 ring-white/10">
-          <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-gold-soft text-xs font-semibold text-accent">
-              {iniciais(user.nome)}
-            </span>
-            <span>
-              <span className="block text-sm font-medium">{user.nome}</span>
-              <span className="block text-[11px] text-white/55">{papel}</span>
-            </span>
+        <div className="space-y-3">
+          <div className="rounded-2xl bg-white/8 p-3 ring-1 ring-white/10">
+            <PwaControls />
           </div>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            className="mt-3 w-full rounded-full border border-white/15 py-1.5 text-xs text-white/80 hover:bg-white/10"
-          >
-            Sair
-          </button>
+          <div className="rounded-2xl bg-black/15 p-3 ring-1 ring-white/10">
+            <div className="flex items-center gap-2">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-gold-soft text-xs font-semibold text-accent">
+                {iniciais(user.nome)}
+              </span>
+              <span>
+                <span className="block text-sm font-medium">{user.nome}</span>
+                <span className="block text-[11px] text-white/55">{papel}</span>
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => void logout()}
+              className="mt-3 w-full rounded-full border border-white/15 py-1.5 text-xs text-white/80 hover:bg-white/10"
+            >
+              Sair
+            </button>
+          </div>
         </div>
       </aside>
 
       <header className="sticky top-0 z-10 border-b border-line/80 bg-card/85 px-4 py-3 backdrop-blur lg:hidden">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-accent text-lg text-white">
-              <span className="font-display">D</span>
-            </span>
+            <img src="/icon-192.png" alt="" className="h-9 w-9 rounded-full object-cover" />
             <strong className="font-display text-xl leading-none">{appName}</strong>
           </div>
-          <button type="button" onClick={() => void logout()} className="salon-btn salon-btn-ghost rounded-full px-3 py-1 text-xs">
-            Sair
-          </button>
+          <div className="flex items-center gap-2">
+            <PwaControls compact />
+            <button type="button" onClick={() => void logout()} className="salon-btn salon-btn-ghost rounded-full px-3 py-1 text-xs">
+              Sair
+            </button>
+          </div>
         </div>
-        <nav className="mt-3 flex gap-1 overflow-x-auto pb-1">
+      </header>
+
+      <main className="px-4 py-4 pb-[5.75rem] lg:px-8 lg:py-7 lg:pb-7">{children}</main>
+
+      <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-card/95 pb-[env(safe-area-inset-bottom)] backdrop-blur lg:hidden">
+        <div className={`grid ${nav.length === 4 ? "grid-cols-4" : "grid-cols-3"}`}>
           {nav.map((link) => {
             const active = pathname.startsWith(link.href);
             return (
               <Link
                 key={link.href}
                 href={link.href}
-                className={`shrink-0 rounded-full px-3 py-1.5 text-sm ${
-                  active ? "bg-accent text-white" : "bg-bg-deep text-muted"
+                className={`flex flex-col items-center px-2 py-2.5 text-[11px] font-medium ${
+                  active ? "text-accent" : "text-muted"
                 }`}
               >
                 {link.label}
               </Link>
             );
           })}
-        </nav>
-      </header>
-
-      <main className="px-4 py-5 lg:px-8 lg:py-7">{children}</main>
+        </div>
+      </nav>
     </div>
   );
 }

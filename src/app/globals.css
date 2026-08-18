@@ -39,6 +39,10 @@ html {
 }
 
 body {
+  padding-top: env(safe-area-inset-top);
+}
+
+body {
   min-height: 100%;
   color: var(--ink);
   background-color: var(--bg);

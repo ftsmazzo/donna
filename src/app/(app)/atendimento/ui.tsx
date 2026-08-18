@@ -89,6 +89,7 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
   const [atribuindo, setAtribuindo] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [crm, setCrm] = useState(emptyCrm);
+  const [fichaAberta, setFichaAberta] = useState(false);
   const typingRef = useRef<number | null>(null);
   const enviandoRef = useRef(false);
   const dirtyCrm = useRef(false);
@@ -101,6 +102,10 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
   telRef.current = tel;
   filtroRef.current = filtro;
   qRef.current = q;
+
+  useEffect(() => {
+    if (initialTel) setTel(initialTel);
+  }, [initialTel]);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -308,8 +313,8 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
   }
 
   return (
-    <div className="salon-card grid h-[calc(100dvh-8.2rem)] min-h-[540px] overflow-hidden rounded-[1.6rem] lg:h-[calc(100dvh-3.6rem)] lg:grid-cols-[300px_minmax(0,1fr)_280px]">
-      <aside className="flex min-h-0 flex-col border-b border-line lg:border-b-0 lg:border-r">
+    <div className="salon-card relative grid h-[calc(100dvh-9.8rem)] min-h-[28rem] overflow-hidden rounded-[1.6rem] lg:h-[calc(100dvh-3.6rem)] lg:grid-cols-[300px_minmax(0,1fr)_280px]">
+      <aside className={`${tel ? "hidden lg:flex" : "flex"} min-h-0 flex-col border-b border-line lg:border-b-0 lg:border-r`}>
         <div className="space-y-2 border-b border-line p-3">
           <input
             className="salon-input rounded-xl text-sm"
@@ -365,14 +370,28 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
         </ul>
       </aside>
 
-      <section className="flex min-h-0 flex-col">
+      <section className={`${tel ? "flex" : "hidden lg:flex"} min-h-0 flex-col`}>
         <header className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-line p-3">
-          <div>
-            <h1 className="font-display text-2xl leading-none">{titulo}</h1>
-            {isAdmin ? <p className="text-xs text-muted">{tel || "—"}</p> : null}
-            {detalhe?.atendimento?.operador ? (
-              <p className="text-xs text-muted">Com: {detalhe.atendimento.operador}</p>
+          <div className="flex min-w-0 items-start gap-2">
+            {tel ? (
+              <button
+                type="button"
+                className="salon-btn salon-btn-ghost mt-0.5 rounded-full px-2 py-1 text-xs lg:hidden"
+                onClick={() => {
+                  setTel("");
+                  if (typeof window !== "undefined") window.history.replaceState(null, "", "/atendimento");
+                }}
+              >
+                Lista
+              </button>
             ) : null}
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl leading-none">{titulo}</h1>
+              {isAdmin ? <p className="text-xs text-muted">{tel || "—"}</p> : null}
+              {detalhe?.atendimento?.operador ? (
+                <p className="text-xs text-muted">Com: {detalhe.atendimento.operador}</p>
+              ) : null}
+            </div>
           </div>
           {tel ? (
             <div className="flex flex-wrap gap-2 text-sm">
@@ -391,6 +410,13 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
                 className="salon-btn salon-btn-ghost rounded-full"
               >
                 Devolver à Pati
+              </button>
+              <button
+                type="button"
+                onClick={() => setFichaAberta((v) => !v)}
+                className="salon-btn salon-btn-ghost rounded-full lg:hidden"
+              >
+                Ficha
               </button>
             </div>
           ) : null}
@@ -480,7 +506,15 @@ export function AtendimentoClient({ papel }: { papel: "admin" | "corretor" }) {
         </footer>
       </section>
 
-      <aside className="min-h-0 overflow-y-auto border-t border-line p-3 lg:border-l lg:border-t-0">
+      <aside
+        className={`${fichaAberta ? "flex" : "hidden lg:flex"} absolute inset-x-0 bottom-0 z-10 max-h-[70%] min-h-0 flex-col overflow-y-auto rounded-t-[1.4rem] border-t border-line bg-card p-3 shadow-[0_-18px_40px_-28px_rgba(42,23,20,0.45)] lg:static lg:max-h-none lg:rounded-none lg:border-l lg:border-t-0 lg:shadow-none`}
+      >
+        <div className="mb-2 flex items-center justify-between lg:hidden">
+          <h2 className="font-display text-xl">Ficha</h2>
+          <button type="button" className="salon-btn salon-btn-ghost rounded-full px-3 py-1 text-xs" onClick={() => setFichaAberta(false)}>
+            Fechar
+          </button>
+        </div>
         {isAdmin ? (
           <>
             <h2 className="font-display text-xl">Passar para alguém</h2>

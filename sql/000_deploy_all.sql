@@ -4,3 +4,4 @@
 \i sql/003_agendamentos_donna.sql
 \i sql/004_crm_minimo.sql
 \i sql/005_espera_donna.sql
+\i sql/007_push_painel.sql

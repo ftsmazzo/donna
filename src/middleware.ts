@@ -2,13 +2,15 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-const PUBLIC = ["/login", "/api/auth/login"];
+const PUBLIC = ["/login", "/api/auth/login", "/sw.js", "/manifest.webmanifest", "/apple-touch-icon.png"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   if (
     PUBLIC.some((path) => pathname === path) ||
     pathname.startsWith("/api/branding") ||
+    pathname.startsWith("/api/interno/") ||
+    pathname.startsWith("/icon-") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/favicon")
   ) {

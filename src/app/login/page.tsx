@@ -53,7 +53,7 @@ export default function LoginPage() {
           <p className="mt-5 max-w-md text-lg text-white/75">
             Agenda, WhatsApp e a equipe no mesmo lugar. Entra, vê o dia e assume o chat quando a cliente pedir gente de verdade.
           </p>
-          <p className="mt-8 text-sm text-gold/90">{agentName} atende o Zap · o painel mostra o que ela fechou</p>
+          <p className="mt-8 text-sm text-white/70">No celular: instale o app e ligue o aviso pra saber quando pedirem gente de verdade.</p>
         </div>
         <form onSubmit={onSubmit} className="salon-card w-full max-w-md justify-self-end rounded-[2rem] p-8 lg:p-10">
           <p className="salon-kicker">{brand}</p>
