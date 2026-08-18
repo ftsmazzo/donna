@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { query } from "@/lib/db";
 import { isResponse, requireUser } from "@/lib/api";
+import { notifySubscription } from "@/lib/push";
 
 type Body = {
   endpoint?: string;
@@ -31,7 +32,16 @@ export async function POST(request: Request) {
     [user.id, endpoint, p256dh, auth, request.headers.get("user-agent") ?? ""],
   );
 
-  return NextResponse.json({ ok: true });
+  const teste = await notifySubscription(
+    { endpoint, p256dh, auth },
+    {
+      title: "Donna",
+      body: "Aviso ligado. Se pedirem humano, chega aqui.",
+      url: "/atendimento",
+    },
+  );
+
+  return NextResponse.json({ ok: true, teste });
 }
 
 export async function DELETE(request: Request) {

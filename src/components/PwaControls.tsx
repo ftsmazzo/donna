@@ -111,12 +111,17 @@ export function PwaControls({ compact }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(sub.toJSON()),
       });
+      const saved = await save.json().catch(() => ({}));
       if (!save.ok) {
-        setMsg("Não consegui gravar o aviso");
+        setMsg(saved.error ?? "Não consegui gravar o aviso");
         return;
       }
       setPushOn(true);
-      setMsg("Aviso ligado. Se pedirem humano, chega aqui.");
+      if (saved.teste?.ok === false) {
+        setMsg(`Ligou no painel, mas a Apple recusou o aviso: ${saved.teste.message || "erro"}`);
+        return;
+      }
+      setMsg("Aviso ligado. Tem que ter chegado um teste agora.");
     } catch {
       setMsg("Não deu pra ligar o aviso neste aparelho");
     } finally {
@@ -124,8 +129,26 @@ export function PwaControls({ compact }: Props) {
     }
   }
 
+  async function testarPush() {
+    setBusy(true);
+    setMsg("");
+    try {
+      const r = await fetch("/api/push/test", { method: "POST" });
+      const data = await r.json();
+      if (!r.ok) {
+        setMsg(data.error ?? "Não testou");
+        return;
+      }
+      if (data.sent > 0) setMsg("Mandei um teste. Olha as notificações.");
+      else setMsg(data.errors?.[0]?.message || "Nenhum celular inscrito");
+    } catch {
+      setMsg("Falha ao testar aviso");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   const showInstall = canInstall || iosHint;
-  if (compact && !showInstall && pushOn && !msg) return null;
 
   return (
     <div className={compact ? "flex flex-wrap items-center justify-end gap-1" : "space-y-2"}>
@@ -136,11 +159,11 @@ export function PwaControls({ compact }: Props) {
       ) : null}
       <button
         type="button"
-        disabled={busy || pushOn}
-        onClick={() => void ativarPush()}
+        disabled={busy}
+        onClick={() => (pushOn ? void testarPush() : void ativarPush())}
         className={`salon-btn rounded-full px-3 py-1 text-xs ${pushOn ? "salon-btn-ghost" : "salon-btn-primary"}`}
       >
-        {pushOn ? "Aviso ligado" : busy ? "Ligando…" : "Ativar aviso"}
+        {busy ? "Ligando…" : pushOn ? "Testar aviso" : "Ativar aviso"}
       </button>
       {msg ? <p className={compact ? "basis-full text-right text-[11px] text-muted" : "text-xs text-muted"}>{msg}</p> : null}
     </div>
