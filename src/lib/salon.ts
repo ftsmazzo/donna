@@ -1,5 +1,7 @@
 export const TZ = "America/Sao_Paulo";
 
+export const GRADE_HORAS = ["09:00", "10:30", "14:00", "16:00", "17:30"] as const;
+
 export const SERVICO_COR: Record<string, { bg: string; fg: string; soft: string }> = {
   CORTE: { bg: "#7a1f32", fg: "#fff8f4", soft: "#f4dbe0" },
   HIDRA: { bg: "#c45c6a", fg: "#fff8f4", soft: "#f8dde1" },

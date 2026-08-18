@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import {
+  GRADE_HORAS,
   chaveDia,
   corServico,
   ehHoje,
@@ -48,24 +49,98 @@ type Unidade = { id: string; nome: string; endereco: string };
 
 export default function AgendaPage() {
   const [itens, setItens] = useState<Item[] | null>(null);
+  const [historico, setHistorico] = useState<Item[]>([]);
   const [espera, setEspera] = useState<Espera[]>([]);
   const [servicos, setServicos] = useState<Servico[]>([]);
   const [unidades, setUnidades] = useState<Unidade[]>([]);
   const [erro, setErro] = useState("");
+  const [okMsg, setOkMsg] = useState("");
+  const [admin, setAdmin] = useState(false);
+  const [salvando, setSalvando] = useState(false);
   const [unidadeFiltro, setUnidadeFiltro] = useState("todas");
+  const [form, setForm] = useState({
+    telefone: "",
+    nome: "",
+    unidadeId: "centro",
+    servicoCodigo: "CORTE",
+    data: "",
+    hora: "16:00",
+    status: "marcado" as "marcado" | "feito",
+  });
+
+  async function carregar() {
+    const r = await fetch("/api/agenda", { cache: "no-store" });
+    const json = await r.json();
+    if (!r.ok) throw new Error(json.error ?? "Erro ao carregar agenda");
+    setItens(json.agendamentos ?? []);
+    setHistorico(json.historico ?? []);
+    setEspera(json.espera ?? []);
+    setServicos(json.servicos ?? []);
+    setUnidades(json.unidades ?? []);
+    setAdmin(Boolean(json.admin));
+    setForm((prev) => ({
+      ...prev,
+      data: prev.data || amanhaSP(),
+      unidadeId: prev.unidadeId || json.unidades?.[0]?.id || "centro",
+      servicoCodigo: prev.servicoCodigo || json.servicos?.[0]?.codigo || "CORTE",
+    }));
+  }
 
   useEffect(() => {
-    fetch("/api/agenda")
-      .then(async (r) => {
-        const json = await r.json();
-        if (!r.ok) throw new Error(json.error ?? "Erro ao carregar agenda");
-        setItens(json.agendamentos ?? []);
-        setEspera(json.espera ?? []);
-        setServicos(json.servicos ?? []);
-        setUnidades(json.unidades ?? []);
-      })
-      .catch((e: Error) => setErro(e.message));
+    carregar().catch((e: Error) => setErro(e.message));
   }, []);
+
+  async function salvarHorario() {
+    setErro("");
+    setOkMsg("");
+    setSalvando(true);
+    try {
+      const r = await fetch("/api/agenda", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error ?? "Não marcou");
+      setOkMsg(form.status === "feito" ? "Histórico lançado. A Pati passa a ver no próximo Zap." : "Horário marcado.");
+      await carregar();
+    } catch (e) {
+      setErro(e instanceof Error ? e.message : "Falha ao marcar");
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function lancarUnha() {
+    setForm((prev) => ({
+      ...prev,
+      servicoCodigo: "MANIC",
+      data: haDiasSP(21),
+      hora: "10:30",
+      status: "feito",
+    }));
+    setOkMsg("Conferi unha há 3 semanas. Toca em Lançar pra gravar.");
+  }
+
+  async function cancelar(id: string, nome: string) {
+    if (!window.confirm(`Cancelar o horário de ${nome}? Se tiver espera, a Pati avisa no Zap.`)) return;
+    setErro("");
+    setOkMsg("");
+    const r = await fetch("/api/agenda", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, acao: "cancelar" }),
+    });
+    const json = await r.json();
+    if (!r.ok) {
+      setErro(json.error ?? "Não cancelou");
+      return;
+    }
+    if (json.aviso) setErro(json.aviso);
+    else if (json.encaixe) setOkMsg("Cancelou e avisou quem estava na espera.");
+    else setOkMsg("Cancelou. Ninguém na espera desse horário.");
+    await carregar().catch((e: Error) => setErro(e.message));
+  }
 
   const filtrados = useMemo(() => {
     const rows = itens ?? [];
@@ -96,8 +171,9 @@ export default function AgendaPage() {
           <p className="salon-kicker">Horários reais</p>
           <h1 className="font-display mt-1 text-4xl leading-none">Agenda da casa</h1>
           <p className="mt-2 max-w-xl text-sm text-muted">
-            O que a Pati fecha no Zap entra aqui. Terça a sábado, duas unidades, catálogo fechado.
+            O que a Pati fecha no Zap entra aqui. No admin você marca, cancela e lança histórico pra montar o teste.
           </p>
+          {okMsg ? <p className="mt-2 text-sm text-ok">{okMsg}</p> : null}
         </div>
         <div className="flex flex-wrap gap-2">
           {[
@@ -117,6 +193,116 @@ export default function AgendaPage() {
           ))}
         </div>
       </div>
+
+      {admin ? (
+        <article className="salon-card rounded-3xl p-5">
+          <p className="salon-kicker">Admin</p>
+          <h2 className="font-display mt-1 text-3xl">Marcar, cancelar, histórico</h2>
+          <p className="mt-1 text-sm text-muted">
+            Marca pra outra pessoa, cancela um horário ocupado (dispara encaixe se tiver espera) ou lança um serviço antigo — unha há 3 semanas entra como feito, não como horário futuro.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <label className="text-sm">
+              Telefone
+              <input
+                className="salon-input mt-1 rounded-xl"
+                value={form.telefone}
+                onChange={(e) => setForm((p) => ({ ...p, telefone: e.target.value }))}
+                placeholder="16996480805"
+              />
+            </label>
+            <label className="text-sm">
+              Nome
+              <input
+                className="salon-input mt-1 rounded-xl"
+                value={form.nome}
+                onChange={(e) => setForm((p) => ({ ...p, nome: e.target.value }))}
+                placeholder="Carla"
+              />
+            </label>
+            <label className="text-sm">
+              Casa
+              <select
+                className="salon-input mt-1 rounded-xl"
+                value={form.unidadeId}
+                onChange={(e) => setForm((p) => ({ ...p, unidadeId: e.target.value }))}
+              >
+                {unidades.map((u) => (
+                  <option key={u.id} value={u.id}>
+                    {u.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Serviço
+              <select
+                className="salon-input mt-1 rounded-xl"
+                value={form.servicoCodigo}
+                onChange={(e) => setForm((p) => ({ ...p, servicoCodigo: e.target.value }))}
+              >
+                {servicos.map((s) => (
+                  <option key={s.codigo} value={s.codigo}>
+                    {s.nome}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-sm">
+              Data
+              <input
+                type="date"
+                className="salon-input mt-1 rounded-xl"
+                value={form.data}
+                onChange={(e) => setForm((p) => ({ ...p, data: e.target.value }))}
+              />
+            </label>
+            <label className="text-sm">
+              Hora
+              <select
+                className="salon-input mt-1 rounded-xl"
+                value={form.hora}
+                onChange={(e) => setForm((p) => ({ ...p, hora: e.target.value }))}
+              >
+                {GRADE_HORAS.map((h) => (
+                  <option key={h} value={h}>
+                    {h}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={`rounded-full px-3 py-1.5 text-sm ${form.status === "marcado" ? "bg-accent text-white" : "bg-bg-deep text-muted"}`}
+              onClick={() => setForm((p) => ({ ...p, status: "marcado" }))}
+            >
+              Horário futuro
+            </button>
+            <button
+              type="button"
+              className={`rounded-full px-3 py-1.5 text-sm ${form.status === "feito" ? "bg-accent text-white" : "bg-bg-deep text-muted"}`}
+              onClick={() => setForm((p) => ({ ...p, status: "feito" }))}
+            >
+              Já feito (histórico)
+            </button>
+          </div>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={salvando}
+              onClick={() => void salvarHorario()}
+              className="salon-btn salon-btn-primary rounded-full disabled:opacity-40"
+            >
+              {salvando ? "Gravando…" : form.status === "feito" ? "Lançar histórico" : "Marcar horário"}
+            </button>
+            <button type="button" className="salon-btn salon-btn-gold rounded-full" onClick={() => void lancarUnha()}>
+              Preparar unha há 3 semanas
+            </button>
+          </div>
+        </article>
+      ) : null}
 
       <section className="grid gap-3 sm:grid-cols-3">
         <Stat label="Marcados" value={String(filtrados.length)} hint="a partir de ontem" />
@@ -185,6 +371,15 @@ export default function AgendaPage() {
                             {row.servico_codigo ?? "serviço"}
                           </span>
                           <p className="mt-3 text-sm font-semibold">{reais(row.preco_centavos)}</p>
+                          {admin ? (
+                            <button
+                              type="button"
+                              className="salon-btn salon-btn-ghost mt-3 rounded-full px-3 py-1 text-xs"
+                              onClick={() => void cancelar(row.id, row.nome || row.telefone)}
+                            >
+                              Cancelar
+                            </button>
+                          ) : null}
                         </div>
                       </div>
                     </div>
@@ -234,6 +429,26 @@ export default function AgendaPage() {
         )}
       </article>
 
+      {historico.length ? (
+        <article className="salon-card rounded-3xl p-5">
+          <p className="salon-kicker">Já feitos</p>
+          <h2 className="font-display text-3xl">Histórico recente</h2>
+          <p className="mt-1 text-sm text-muted">
+            Não ocupa grade. É o que a Pati usa pra lembrar unha, coloração, etc.
+          </p>
+          <ul className="mt-4 grid gap-2 md:grid-cols-2">
+            {historico.map((row) => (
+              <li key={row.id} className="rounded-2xl border border-line p-3 text-sm">
+                <strong>{row.servico}</strong>
+                <p className="text-muted">
+                  {formatDiaLinha(row.inicio)} · {formatHora(row.inicio)} · {row.nome || row.telefone}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </article>
+      ) : null}
+
       {servicos.length ? (
         <article>
           <p className="salon-kicker">Cardápio</p>
@@ -267,6 +482,18 @@ export default function AgendaPage() {
       ) : null}
     </div>
   );
+}
+
+function amanhaSP() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return d.toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
+}
+
+function haDiasSP(dias: number) {
+  const d = new Date();
+  d.setDate(d.getDate() - dias);
+  return d.toLocaleDateString("sv-SE", { timeZone: "America/Sao_Paulo" });
 }
 
 function unidadesDoServico(raw: string[] | string | null | undefined) {
